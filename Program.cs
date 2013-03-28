@@ -12,10 +12,10 @@ namespace RavenDBPerformance
     {
         static void Main(string[] args)
         {
-            var numDocumentsToStore = 4000;
+            var numDocumentsToStore = 2000;
             var numThreads = 15;  //15 is the optimal value for nsb to pull messages from MSMQ
             var forceDtc = true;
-            var useTheRealSagaPersister = false; // set this to true to run this test with the sagapersister nsb is using, false uses a simplefied version
+            var useTheRealSagaPersister = true; // set this to true to run this test with the sagapersister nsb is using, false uses a simplefied version
 
             var fakeResourceManagerId = Guid.Parse("607b05af-c1fe-4afb-88d2-9736cd96b6ac");
 
@@ -85,10 +85,11 @@ namespace RavenDBPerformance
             var orderId = Guid.NewGuid();
             var sagaId = Guid.NewGuid();
 
-            //fake a load since the saga persister will always load find existing sagas
-            // the real persister does an include on the saga id
-            session.Load<SagaUniqueDocument>(orderId);
-
+            ////fake a load since the saga persister will always load find existing sagas
+            //// the real persister does an include on the saga id
+            session.Include("SagaId")
+                   .Load<SagaUniqueDocument>(orderId);
+                
             session.Store(new SagaData
                 {
                     Id = Guid.NewGuid(),
@@ -101,9 +102,6 @@ namespace RavenDBPerformance
                     Id = orderId,
                     SagaId = sagaId
                 });
-            
-
-            session.SaveChanges();
         }
     }
 
